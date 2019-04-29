@@ -1,7 +1,7 @@
 # Corso RedHat
 Appunti del corso tenuto da ExtraOrdy:
 
-- [ ] lezione intorduttiva:
+- [ ] lezione introduttiva:
 - [ ] lezione 1:
 - [ ] lezione 2:
 - [ ] lezione 3:
