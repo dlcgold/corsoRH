@@ -98,6 +98,10 @@ possiamo anche richiedere informazioni sui file:
 drwxr-xr-x 2 me me 4096 30 apr 11.37 other
 -rw-r--r-- 2 me me 4096 30 apr 11.37 document.txt
 ```
+con:
+<p align="center">
+  <img width = "600" height="400" src="img/lsl.png"/>
+</p>
 
 Il percorso di file o di una directory può essere specificato in due modi:
 1) **con il PERCORSO ASSOLUTO**, ovvero indicando ogni cartella e sotto cartella 
@@ -125,3 +129,249 @@ Il percorso di file o di una directory può essere specificato in due modi:
 
 In UNIX i nomi di file e directory sono *case sensitive* e non si usano le estensioni per determinare il contenuto di un file. Per comodità **NON SI USANO SPAZI NEI NOMI DI FILES E DIRECTORIES**
 
+Come abbiamo visto si possono dare opzioni ai vari comandi con il simbolo "-" seguito
+da una lettera, oppure, in modalità estesa, con "--" seguito dal nome dell'opzione.
+Per *ls* si ha, per esempio:
+<p align="center">
+  <img width = "700" height="600" src="img/ls.png"/>
+</p>
+
+Per determinare il tipo di file, ricordando che l'estensione non implica alcun tipo preciso di file, si ha il comando file:
+```shell
+[me@linuxbox ~]$ file picture.jpg
+picture.jpg: JPEG image data, JFIF standard 1.01
+```
+In Linux *everything is a file* e questo comporta l'esistenza di migliaia di tipi di file.
+
+Per visualizzare file di testo si ha *less*, che permette di spostarsi su e giù con le frecce per visualizzaree il contenuto (per uscire usare "q"):
+```shell
+[me@linuxbox ~]$ less /etc/passwd
+```
+vediamo una tabella con le shortcut principali:
+<p align="center">
+  <img width = "600" height="400" src="img/less.png"/>
+</p>
+
+Torniamo sul directory tree, si hanno le seguenti direcory principali:
+<p align="center">
+  <img width = "550" height="300" src="img/dir1.png"/>
+</p>
+<p align="center">
+  <img width = "650" height="800" src="img/dir2.png"/>
+</p>
+<p align="center">
+  <img width = "700" height="800" src="img/dir3.png"/>
+</p>
+<p align="center">
+  <img width = "550" height="350" src="img/dir4.png"/>
+</p>
+
+Vediamo un dettaglio:
+```shell
+[me@linuxbox ~]$ ls -l
+lrwxrwxrwx 1 root root 11 2007-08-11 07:34 libc.so.6 -> libc-2.6.so
+```
+quella "l" all'inizio significa che abbiamo di fronte un link simbolico (*symlink*), con il link chiamato *libc.so.6*  che punta alla libreria condivisa *libc.2.6.so*.
+
+### MANIPOLAZIONE DEI FILE
+
+Prima di tutto introduciamo una feature della shell essenziale: le **wildcards**, ovvero dei caratteri speciali che si usano per specificare l'uso di più file in vase ad una certa richiesta:
+<p align="center">
+  <img width = "600" height="250" src="img/wild.png"/>
+</p>
+con (si usano anche le solite regole delle regex come [a-z] per indicare un carattere da a e z (minuscoli), [a-z]\*, per indicare n caratteri tra a e z (minuscoli) etc...):
+<p align="center">
+  <img width = "600" height="200" src="img/wild2.png"/>
+</p>
+<p align="center">
+  <img width = "600" height="200" src="img/wild3.png"/>
+</p>
+<p align="center">
+  <img width = "600" height="300" src="img/wild4.png"/>
+</p>
+
+Per creare una directory usiamo *mkdir* seguito dal nome della cartella, o di più cartelle:
+```shell
+[me@linuxbox ~]$ ls 
+dir1 dir2
+[me@linuxbox ~]$ mkdir dir3 dir4
+[me@linuxbox ~]$ ls 
+dir1 dir2 dir3 dir4
+```
+
+Per copiare si ha il comando *cp*. Si può copiare il file/direcory in un altro/a con (da source a dest):
+```shell
+[me@linuxbox ~]$ cp source dest
+```
+si possono copiare più files mettendoli in sequenza (o usando una wildcard).
+Si hanno le seguenti opzioni:
+<p align="center">
+  <img width = "600" height="500" src="img/cp1.png"/>
+</p>
+Vediamo qualche esempio:
+<p align="center">
+  <img width = "600" height="100" src="img/cp2.png"/>
+</p>
+<p align="center">
+  <img width = "600" height="300" src="img/cp3.png"/>
+</p>
+
+Per spostare un file in un altro uso *mv*:
+```shell
+[me@linuxbox ~]$ mv source dist
+```
+Si hanno le seguenti opzioni:
+<p align="center">
+  <img width = "600" height="80" src="img/mv.png"/>
+</p>
+Vediamo qualche esempio:
+<p align="center">
+  <img width = "600" height="250" src="img/mv2.png"/>
+</p>
+<p align="center">
+  <img width = "600" height="300" src="img/mv3.png"/>
+</p>
+
+Per eliminare file e direcories (con -r) uso *rm*:
+```shell
+[me@linuxbox ~]$ ls
+file.txt file2.txt
+[me@linuxbox ~]$ rm file2.txt
+[me@linuxbox ~]$ ls
+file.txt
+```
+Si hanno le seguenti opzioni:
+<p align="center">
+  <img width = "600" height="280" src="img/rm.png"/>
+</p>
+Vediamo qualche esempio:
+<p align="center">
+  <img width = "600" height="250" src="img/rm2.png"/>
+</p>
+
+per creare link, sia hard links che symlinks, uso *ln*. Per un link normale:
+```shell
+[me@linuxbox ~] ln file link
+```
+Per un link simbolico:
+```shell
+[me@linuxbox ~] ln -s file link
+```
+
+### COMANDI PER LA PRODUTTIVITÀ
+
+I comandi possono essere built-in della shell, programmi, alias o funzioni della shell.
+Con *type* possono essere identificati:
+```shell
+[me@linuxbox ~]$ type type
+type is a shell builtin
+[me@linuxbox ~]$ type ls
+ls is aliased to `ls --color=tty'
+[me@linuxbox ~]$ type cp
+cp is /bin/cp
+[me@linuxbox ~]$ type emacs
+emacs is /usr/bin/emacs
+```
+
+Per determinare dove si trova un eseguibile (solo un eseguibile non un alias o altro) uso *which*:
+```shell
+[me@linuxbox ~] which ls
+/bin/ls
+```
+
+Ci sono vari modi per ottenere per ottenere la documentazione di un comando.
+
+Bash ha il comando built-in *help*:
+```shell
+[me@linuxbox ~]$ help cd
+cd: cd [-L|[-P [-e]] [-@]] [dir]
+    Change the shell working directory.
+    
+	Change the current directory to DIR.
+    value of the HOME shell variable.
+
+    ... 
+    Options:
+       -L force symbolic links to be followed: resolve symbolic
+       links in DIR after processing instances of `..'
+       ...
+```
+Molti eseguibili hanno *--help*:
+```shell
+[me@linuxbox ~]$ mkdir --help
+Usage: mkdir [OPTION] DIRECTORY...
+Create the DIRECTORY(ies), if they do not already exist.
+   -Z, --context=CONTEXT (SELinux) set security context to CONTEXT
+   ...
+```
+Quasi tutti hanno la *man page*, richiamabile con *man*:
+```shell
+[me@linuxbox ~]$ man ls
+```
+Una man page è divisa in 8 sezioni:
+1) User commands
+2) Programming interfaces for kernel system calls
+3) Programming interfaces to the C library
+4) Special files such as device nodes and drivers
+5) File formats
+6) Games and amusements such as screen savers
+7) Miscellaneous
+8) System administration commands
+
+richiamabili, per esempio per il *file formats* di passwd si ha:
+```shell
+[me@linuxbox ~]$ man 5 passwd
+```
+
+Con *apropos* si cerca una parola chiave nei vari man, ottenendo i comandi più consoni, tra parenetsi è indicata la sezione:
+```shell
+[me@linuxbox ~]$ apropos partiton
+addpart (8)   - simple wrapper around the "add partition"...
+all-swaps (7) - event signalling that all swap partitions...
+cfdisk (8)    - display or manipulate disk partition table
+cgdisk (8)    - Curses-based GUID partition table (GPT)...
+delpart (8)   - simple wrapper around the "del partition"...
+fdisk (8)     - manipulate disk partition table
+fixparts (8)  - MBR partition table repair utility
+...
+```
+ 
+Esiste anche *whatis* che mostra una linea di descrizione:
+```shell
+[me@linuxbox ~]$ whatis ls
+ls        (1) - list directory contents
+```
+
+GNU Project mette ancge a disposizionje *info* che mostra le informazioni in un reader come quello di *less*. Si hanno le seguenti opzioni:
+<p align="center">
+  <img width = "700" height="350" src="img/info.png"/>
+</p>
+
+Si possono mettere più comandi in sequenza con ";":
+```shell
+[me@linuxbox ~]$ cd /usr; ls; cd -
+bin games include lib local sbin
+/home/me
+[me@linuxbox ~]$
+```
+Per creare alias si ha:
+```shell
+[me@linuxbox ~]$ alias foo='cd /usr; ls; cd -'
+```
+che può essere aggiunto al *.bashrc* o al file di config della propria shell (*.zshrc* etc...).
+
+Per rimuovere un alias uso:
+```shell
+[me@linuxbox ~]$ unalias foo
+[me@linuxbox ~]$ type foo
+bash: type: foo: not found
+```
+Con *alias* elenco tutti i vari aliases:
+```shell
+[me@linuxbox ~] alias
+alias ls='ls --color=tty'
+...
+```
+### REDIREZIONAMENTO
+
+*pagina 78*
