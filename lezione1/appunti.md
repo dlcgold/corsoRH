@@ -443,3 +443,36 @@ su un file speciale chiamato */dev/null* che è un *system device* che  accetta 
 [me@linuxbox ~]$ ls -l /bin/usr 2> /dev/null
 ```
 
+Vediamo ora come concatenare files. *cat* legge il contenuto di un file e lo redireziona a *stdout*.
+Quindi, per visualizzare semplicemente il contenuto di un file ho:
+```shell
+[me@linuxbox ~]$ cat ls-output.txt
+```
+Si può anche concatenare una serie di file usando cat:
+```shell
+[me@linuxbox ~]$ cat file1.txt file2.txt file3.txt > file_tot.txt
+```
+Ovviamente si possono usare le wildcards:
+```shell
+[me@linuxbox ~]$ cat movie.mpeg.0* > movie.mpeg
+```
+Senza un file *cat* aspetta un *stdin* e poi lo riporta come output, apettando poi un altro input.
+Con *cat* si possono creare anche file (scrivendo il contenuto subito dopo l'immissione del comando):
+```shell
+[me@linuxbox ~]$ cat lazy_dog.txt
+The quick brown fox jumped over the lazy dog.
+```
+Con ">" possiamo anche redirezionare lo *stdin* dalla tastiera al file di input.
+```shell
+[me@linuxbox ~]$ cat < lazy_dog.txt
+The quick brown fox jumped over the lazy dog.
+```
+
+Parliamo ora delle *pipelines*, che si indica con "|" (il simpbolo di pipe appunto)
+e permette di indirizzare lo *stdout* del primo comando nello *stdin* del secondo.
+Per esempio reindirizziamo l'output di *ls* in *less*:
+```shell
+[me@linuxbox ~]$ ls -l /usr/bin | less
+```
+Solitamente le pipe si usano per "filtrare"
+pagina 86
