@@ -474,5 +474,347 @@ Per esempio reindirizziamo l'output di *ls* in *less*:
 ```shell
 [me@linuxbox ~]$ ls -l /usr/bin | less
 ```
-Solitamente le pipe si usano per "filtrare"
-pagina 86
+Solitamente le pipe si usano per "filtrare".
+Un esempio è usare il comando *sort*, che appunto mette in ordine quando ricevuto
+, per esempio l'output di *ls* su due cartelle, è restituisce un un'unica lista ordinata:
+```shell
+[me@linuxbox ~]$ ls /bin /usr/bin | sort
+```
+Abbiamo poi il comando *uniq* che accetta una lista ordinata o un file e rimuove i dublicati. 
+Viene quindi usato spesso con *sort*:
+```shell
+[me@linuxbox ~]$ ls /bin /usr/bin | sort | uniq
+```
+Possiamo anche vedere solo la lista dei duplicati con l'opzione "-d":
+```shell
+[me@linuxbox ~]$ ls /bin /usr/bin | sort | uniq -d
+```
+Abbiamo poi il comando *wc (word count)*, che stampa, in sequenza, il numero di righe, di parle e di byte:
+```shell
+[me@linuxbox ~]$ wc ls-output.txt
+ 7902 64566 503634 ls-output.txt
+```
+Si possono anche stampare determinate informazioni col le varie opzioni, tipo "-l" 
+per avere solo il numero di righe. È spesso usato in pipe, per esempio per vedere
+quante righe ordinate non ripetute ho da due *ls*:
+```shell
+[me@linuxbox ~]$ ls /bin /usr/bin | sort | uniq | wc -l
+2728
+```
+Vediamo ora il comando di filtro più importante: *grep*. Questo comando si usa in pipe
+e cerca un "pattern", rappresentato da stringhe o regex, per esempio:
+```shell
+[me@linuxbox ~]$ ls /bin /usr/bin | sort | uniq | grep zip
+bunzip2
+bzip2
+gunzip
+gzip
+unzip
+zip
+zipcloak
+zipgrep
+zipinfo
+zipnote
+zipsplit
+```
+Si hanno delle opzioni interesanti, come "-i" che rende la ricerca *case-insensitive* e "-v" che restituisce le righe che **non** rispettano il pattern.
+
+Abbiamo poi *head* e *tail*, che stampano le prime e le ultime 10 righe di un testo. 
+Il numero può essere cambiato con l'opzione "-n":
+```shell
+[me@linuxbox ~]$ head -n 1 ls-output.txt
+total 4
+-rwxr-xr-x 1 root root      32432 2007-12-05 08:58 primo
+[me@linuxbox ~]$ tail -n 1 ls-output.txt
+total 4
+-rwxr-xr-x 1 root root      32432 2007-12-05 08:58 ultimo
+```
+Ovviamente si possono usare in pipe. Con *tail* e l'opzione "-f" si possono evedere i file
+in realtime, come per esempio i log che si aggiornano continuamente (si richiedono spesso i permessi di root). 
+
+Per direzionare una parte intermediaria della pipe su un file, permettendo però 
+l'uso dell'output per la pipe successiva si ha *tee*:
+```shell
+[me@linuxbox ~]$ ls /usr/bin | tee ls.txt | grep zip
+bunzip2
+bzip2
+gunzip
+gzip
+unzip
+zip
+zipcloak
+zipgrep
+zipinfo
+zipnote
+zipsplit
+```
+
+Un comando particolare è *echo*, che stampa l'argomento (anche una wildcard con il *pathname expansion*) su *stdout*. Le possibilità variano dal testo, al tree delle directory, ai conti aritmetici etc...:
+```shell
+[me@linuxbox ~]$ echo this is a test
+this is a test
+[me@linuxbox ~]$ echo *
+Desktop Documents ls-output.txt Music Pictures Public Templates Videos
+[me@linuxbox ~]$ echo D*
+Desktop Documents
+[me@linuxbox ~]$ echo *s
+Documents Pictures Templates Videos
+[me@linuxbox ~]$ echo [[:upper:]]*
+Desktop Documents Music Pictures Public Templates Videos
+[me@linuxbox ~]$ echo /usr/*/share
+/usr/kerberos/share /usr/local/share
+[me@linuxbox ~]$ echo ~
+/home/me
+[me@linuxbox ~]$ echo ~foo
+/home/foo
+[me@linuxbox ~]$ echo $((2 + 2))
+4
+```
+Per le operazioni si ha la sintassi *$((expression))* e si hanno le seguenti operazioni:
+<p align="center">
+  <img width = "600" height="250" src="img/op.png"/>
+</p>
+
+```shell
+[me@linuxbox ~]$ echo $(($((5**2)) * 3))
+75
+[me@linuxbox ~]$ echo Five divided by two equals $((5/2))
+Five divided by two equals 2
+[me@linuxbox ~]$ echo with $((5%2)) left over.
+with 1 left over.
+```
+Si hanno le *brace expansion*:
+```shell
+[me@linuxbox ~]$ echo Front-{A,B,C}-Back
+Front-A-Back Front-B-Back Front-C-Back
+[me@linuxbox ~]$ echo Number_{1..5}
+Number_1 Number_2 Number_3 Number_4 Number_5
+[me@linuxbox ~]$ echo {01..15}
+01 02 03 04 05 06 07 08 09 10 11 12 13 14 15
+[me@linuxbox ~]$ echo {001..15}
+001 002 003 004 005 006 007 008 009 010 011 012 013 014 015
+[me@linuxbox ~]$ echo {Z..A}
+Z Y X W V U T S R Q P O N M L K J I H G F E D C B A
+[me@linuxbox ~]$ echo a{A{1,2},B{3,4}}b
+aA1b aA2b aB3b aB4b
+```
+le brace si possono usare anche con altri comandi, tipo *mkdir*:
+```shell
+[me@linuxbox Photos]$ mkdir {2007..2009}-{01..12}
+[me@linuxbox Photos]$ ls
+2007-01 2007-07 2008-01 2008-07 2009-01 2009-07
+2007-02 2007-08 2008-02 2008-08 2009-02 2009-08
+2007-03 2007-09 2008-03 2008-09 2009-03 2009-09
+2007-04 2007-10 2008-04 2008-10 2009-04 2009-10
+2007-05 2007-11 2008-05 2008-11 2009-05 2009-11
+2007-06 2007-12 2008-06 2008-12 2009-06 2009-12
+```
+Alcune informazioni vengono nominate in *variabili di sistema*, per esempio *USER* che contiene il nostro username. Si richiamano con "$" davanti:
+```shell
+[me@linuxbox ~]$ echo $USER
+me
+```
+e si listano tutte con:
+```shell
+[me@linuxbox ~]$ printenv 
+```
+
+Si può usare anche un comando come *expansion*:
+```shell
+[me@linuxbox ~]$ echo $(ls)
+Desktop Documents ls-output.txt Music Pictures Public Templates
+Videos
+[me@linuxbox ~]$ ls -l $(which cp)
+-rwxr-xr-x 1 root root 71516 2007-12-05 08:58 /bin/cp
+```
+Si possono ovviamente anche usare intere pipelines:
+```shell
+[me@linuxbox ~]$ file $(ls -d /usr/bin/* | grep zip)
+/usr/bin/bunzip2: symbolic link to `bzip2'
+...
+```
+Si possono usare le "quote doppie", che permettono di valutare considerando gli sapzi,
+e le 'quote singole', che sopprimono l'espansione:
+```shell
+[me@linuxbox ~]$ ls -l "two words.txt"
+-rw-rw-r-- 1 me me 18 2016-02-20 13:03 two words.txt
+[me@linuxbox ~]$ mv "two words.txt" two_words.txt
+[me@linuxbox ~]$ echo "$USER $((2+2)) $(cal)"
+me 4 February 2019
+Su Mo Tu We Th Fr Sa
+                1  2
+ 3  4  5  6  7  8  9
+10 11 12 13 14 15 16
+17 18 19 20 21 22 23
+24 25 26 27 28 29
+[me@linuxbox ~]$ echo this is a   test
+this is a test
+[me@linuxbox ~]$ echo "this is a   test"
+this is a   test
+
+[me@linuxbox ~]$ echo text ~/*.txt {a,b} $(echo foo) $((2+2)) $USER
+text /home/me/ls-output.txt a b foo 4 me
+[me@linuxbox ~]$ echo "text ~/*.txt {a,b} $(echo foo) $((2+2)) $USER"
+text ~/*.txt {a,b} foo 4 me
+[me@linuxbox ~]$ echo 'text ~/*.txt {a,b} $(echo foo) $((2+2)) $USER'
+text ~/*.txt {a,b} $(echo foo) $((2+2)) $USER
+```
+Si hanno i soliti caratteri di escape, come *\$*:
+```shell
+[me@linuxbox ~]$ echo "The balance for user $USER is: \$5.00"
+The balance for user me is: $5.00
+```
+e si usano per "!", "&", etc...Per uil carattere spazio si usa "\ ", per il backslash "\\". Inoltre se ne hanno alcune particlari, per newline e tab per esempio:
+<p align="center">
+  <img width = "600" height="280" src="img/ed.png"/>
+</p>
+
+### APPROFONDIMENTO DI BASH
+
+BASH usa una libreria, la *readline*, per implementare l'editing della command line. 
+Per il movimento si hanno le seguenti shortcut:
+<p align="center">
+  <img width = "650" height="250" src="img/bam.png"/>
+</p>
+per l'editing:
+<p align="center">
+  <img width = "650" height="250" src="img/bam2.png"/>
+</p>
+si hanno poi:
+<p align="center">
+  <img width = "650" height="250" src="img/bam3.png"/>
+</p>
+Per l'*autocomplete* si usa TAB e anche:
+<p align="center">
+  <img width = "650" height="150" src="img/bam4.png"/>
+</p>
+
+La history (solitamente con gli ultimi 1000 comandi) è visibile con:
+```shell
+[me@linuxbox ~]$ history
+```
+e il comando *!<numero>* ti restituisce l'n-simo comando.
+
+Inoltre:
+<p align="center">
+  <img width = "650" height="350" src="img/bam5.png"/>
+</p>
+e oltre al numero si hanno altre espansioni:
+<p align="center">
+  <img width = "650" height="200" src="img/bam6.png"/>
+</p>
+
+
+### PERMESSI
+
+In linux un utente può essere *owner* di un file e l'utente di root è il proprietario anche dei file di sistema. Gli user possono appartenere ad un gruppo che permette a più utenti di avere accesso a determinati file. 
+Con *id* si possono vedere le informazioni riguardo un user, che cambiano in abse alla distro:
+```shell
+[me@linuxbox ~]$ id
+uid=1000(me) gid=1000(me)
+groups=4(adm),20(dialout),24(cdrom),25(floppy),29(audio),30(dip),44(v
+ideo),46(plugdev),108(lpadmin),114(admin),1000(me)
+```
+Torniamo all'output di *ls -l*:
+```shell
+[me@linuxbox ~]$ ls -l foo.txt
+-rw-rw-r-- 1 me me 0 2016-03-06 14:52 foo.txt
+```
+Le prime 10 righe sono gli attributi del file e il primo carattere ne indica il tipo:
+<p align="center">
+  <img width = "650" height="160" src="img/pe.png"/>
+</p>
+<p align="center">
+  <img width = "650" height="180" src="img/pe1.png"/>
+</p>
+mentre gli altri 9 indicano la *file mode* (i permessi di lettura,"r", scrittura, "w" e esecuzione "x"),
+i primi 3 per l'owner, i secondi per il gruppo dell'owner e gli ultimi per tutti:
+<p align="center">
+  <img width = "650" height="100" src="img/pe2.png"/>
+</p>
+<p align="center">
+  <img width = "650" height="300" src="img/pe3.png"/>
+</p>
+<p align="center">
+  <img width = "650" height="550" src="img/pe4.png"/>
+</p>
+
+Per cambiare *file mode* uso il comando *chmod*, che può essere effettuato solo
+dal file owner o con i privilegi di superuser. *chmod* supporta due modi per specificare i cambiamenti, la rappresentazione in base 8 o quella simbolica. Vediamo quella in base 8:
+<p align="center">
+  <img width = "600" height="300" src="img/mod.png"/>
+</p>
+Si usa quindi una sequenza di tre numeri, tutti e tre secondo la tabella sopra, per owner, group e world. per esempio, per dare permessi di lettura e scrittura solo a owner si usa 600:
+
+```shell
+[me@linuxbox ~]$ chmod 600 foo.txt
+```
+Si ha anche una notazione simbolica per indicare a chi cambiare i permessi:
+<p align="center">
+  <img width = "600" height="230" src="img/mod2.png"/>
+</p>
+e per i permessi stessi
+<p align="center">
+  <img width = "600" height="330" src="img/mod3.png"/>
+</p>
+
+Si ha poi il comando *umask* che rimette i permessi di default. (*parte da sistemare*). Di default si ha 0002
+
+Ci sono dei modi per cambiare user, come sloggare e riloggare o usare *sudo* o *su*.
+*su* ti permette di cambiare utente mentrev *sudo* permette ad un admin di sistemare
+un file, */etc/sudoers* dove è indicato come gli utenti possono cambiare user. 
+
+Per passare ad utente superuser si può usare:
+```shell
+[me@linuxbox ~]$ su -
+Password:
+[root@linuxbox ~]#
+[root@linuxbox ~]# exit
+[me@linuxbox ~]$
+```
+ma si può anche solo eseguire un comando:
+```shell
+[me@linuxbox ~]$ su -c 'ls -l /root/*'
+Password:
+-rw------- 1 root root 754 2007-08-11 03:19 /root/anaconda-ks.cfg
+/root/Mail:
+total 0
+[me@linuxbox ~]$
+```
+Una cosa simile la permette *sudo*, che permette di eseguire qualcosa come se si fosse un altro utente. Per esempio:
+```shell
+[me@linuxbox ~]$ sudo backup_script
+Password:
+System Backup Starting...
+```
+
+Per cambiare owner e gruppo si ha *chown* che può essere eseguito con privilegi di superuser. Si ha la seguente sintassi: *chown [owner][:[group]] file...*. vediamo qualche argomento d'esempio:
+<p align="center">
+  <img width = "600" height="250" src="img/ow.png"/>
+</p>
+quindi tipo:
+```shell
+[janet@linuxbox ~]$ sudo chown tony: ~tony/myfile.txt
+```
+
+Per cambiare la password di un user si ha *passwd [user]*, se l'user non viene indicato si sta usando l'user corrente:
+```shell
+[me@linuxbox ~]$ passwd
+(current) UNIX password:
+New UNIX password:
+```
+e si effettuano dei controlli sulla qualità della password:
+```shell
+[me@linuxbox ~]$ passwd
+(current) UNIX password:
+New UNIX password:
+BAD PASSWORD: is too similar to the old one
+New UNIX password:
+BAD PASSWORD: it is WAY too short
+New UNIX password:
+BAD PASSWORD: it is based on a dictionary word
+```
+Si hanno anche altri comandi come *useradd, adduser, groupadd*.
+
+### Processi
+pagina 134
