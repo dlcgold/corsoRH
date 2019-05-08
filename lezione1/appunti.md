@@ -374,4 +374,72 @@ alias ls='ls --color=tty'
 ```
 ### REDIREZIONAMENTO
 
-*pagina 78*
+Esistono due tipi di output:
+1) il risultato dell'esecuzione di un programma
+2) un messaggio di stato o di errore indicante come procede l'esecuzione
+
+Dato che *everything is a file* programmi come *ls* direzionano il risultato su un file chiamato
+*standard output (stdout) e gli errori su uno chiamato *standard error (stderr)*.
+Questi file non vengono salvati su disco ma vengono reindirizzatti allo schermo.
+Molti programmi hanno anche uno *standard input (stdin)* collegato alla tastiera.
+**Tutte ciò può, ovvero l'I/O, essere reindirizzato.**
+
+Per reindirizzare lo stdout verso un file uso l'operatore ">" seguito dal nome del file:
+```shell
+[me@linuxbox ~]$ ls -l /usr/bin > ls-output.txt
+```
+abbiamo quindi un file di testo, abbastanza grande, col risultato di *ls*:
+```shell
+[me@linuxbox ~]$ ls -l ls-output.txt
+-rw-rw-r-- 1 me   me   167878 2018-02-01 15:07 ls-output.txt
+```
+Se però facciamo:
+```shell
+[me@linuxbox ~]$ ls -l /bin/usr > ls-output.txt
+ls: cannot access /bin/usr: No such file or directory
+```
+non avremo l'output sul file in quanto *ls* non direziona gli errori su *stdout* ma su *stderr*.
+Nonostante non ci sia nulla da scrivere però il file viene creato, vuoto, in quanto ">"
+riscrive sempre il file dall'inizio. Quindi
+si può usare questo trucco per creare file vuoti:
+```shell
+[me@linuxbox ~]$ > empty_file.txt
+```
+Se invece vogliamo fare l*append* invece di riscrivere usiamo l'operatore ">>":
+```shell
+[me@linuxbox ~]$ ls -l /usr/bin >> ls-output.txt
+```
+quindi se facciamo:
+```shell
+[me@linuxbox ~]$ ls -l /usr/bin >> ls-output.txt
+[me@linuxbox ~]$ ls -l /usr/bin >> ls-output.txt
+[me@linuxbox ~]$ ls -l /usr/bin >> ls-output.txt
+[me@linuxbox ~]$ ls -l ls-output.txt
+-rw-rw-r-- 1 me   me   503634 2018-02-01 15:07 ls-output.txt
+```
+scriviamo tre volte l'output sul file.
+
+Se vogliamo reindirizzare tutto l'output, quindi anche lo *stderr*, possiamo dare:
+```shell
+[me@linuxbox ~]$ ls -l /bin/usr > ls-output.txt 2>&1
+```
+dove si reindirizza anche il *file descriptor 2*, ovvero lo *stderr*, al 
+*file descriptor 1*, ovvero lo *stdout*, con *2>&1*.
+
+Le versioni recenti di BASH consentono di vare lo stesso anche con:
+```shell
+[me@linuxbox ~]$ ls -l /bin/usr &> ls-output.txt
+```
+dove la notazione "&>" consente di reindirizzare sia sia *stdout* che *stderr*.
+Si ha una notazione simile per l'*append* con ">>":
+```shell
+[me@linuxbox ~]$ ls -l /bin/usr &>> ls-output.txt
+```
+
+Spesso si ha la filosofia del *silence il golden* se non vogliamo l'output di un comando.
+Spesso si applica nel caso di errori e messaggi di stato. Per far ciò si direziona 
+su un file speciale chiamato */dev/null* che è un *system device* che  accetta l'input e non ci fa nulla:
+```shell
+[me@linuxbox ~]$ ls -l /bin/usr 2> /dev/null
+```
+
