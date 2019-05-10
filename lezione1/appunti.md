@@ -815,6 +815,3 @@ New UNIX password:
 BAD PASSWORD: it is based on a dictionary word
 ```
 Si hanno anche altri comandi come *useradd, adduser, groupadd*.
-
-### Processi
-pagina 134
