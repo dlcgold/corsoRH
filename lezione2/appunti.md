@@ -151,3 +151,4 @@ tmpfs           285M     0  285M   0% /run/user/0
 Se saturo un mount point lo rendo inutilizzabile.
 Un buin trucco è creare una cartella nel mountpoint e lavorarci dentro, così in uno script
 si può controllare l'esistenza della directory e abortire in caso di assenza.
+ciao
