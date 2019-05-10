@@ -112,7 +112,7 @@ o anche:
 Il programma *lsof* di dice cosa sta usando un certo device:
 ```shell
 [me@linuxbox ~]$ sudo lsof /home
-bash      15106 osboxes  cwd    DIR    8,2     4096 12320769 /home/osboxes
+bash      15106 linuxbox  cwd    DIR    8,2     4096 12320769 /home/linuxbox
 ...
 ```
 Il file */etc/fstab*  contiene le informazioni necessarie al montaggio delle periferiche di memorizzazione del sistema:
@@ -149,6 +149,57 @@ tmpfs           285M   40K  285M   1% /run/user/1000
 tmpfs           285M     0  285M   0% /run/user/0
 ```
 Se saturo un mount point lo rendo inutilizzabile.
-Un buin trucco è creare una cartella nel mountpoint e lavorarci dentro, così in uno script
+Un buon trucco è creare una cartella nel mountpoint e lavorarci dentro, così in uno script
 si può controllare l'esistenza della directory e abortire in caso di assenza.
-ciao
+
+## LVM (APPROFONDIRE L'ARGOMENTO)
+
+Vediamo ora come fare partizionamento dinamico, dove si usa una partizione o l'intero disco come fondamenta per una struttura dati di partizioni logiche. Si ha *LVM*, *Logical Volume Manager*, con lo storage vero definito da *Phisycal Volume* e un contenitore *Volume Group* dove credo dispositivi a blocchi logici, *Logical Volume*. Il kernel vede questi blocchi come fisici ma sono gestiti in maniera diversa. Espandere un volume logica significa rimappare l'*extend*. .
+
+Con *fdisk* selezione **linux LVM**. Con *pvcreate* definisco il Phisycal Volume. *pvs* mostra tutti i volumi e *pvdispaly* seguito dal nome mostra le info riguardo uno in  preciso. *vgcreate* crea il volume group e *vgs* mostra tutti i gruppi e *vgdisplay* seguito dal nome mostra le info riguardo uno in  preciso. Poi ho *lvcreate* per creare il volume logico, con l'opzione "-L" per la dimensione, e "-n" per il nome, e con alla fine il nome del volume group. Si ha poi *lvdisplay*
+per le informazioni. A volte si ha il path esteso con */dev/mapper/...*
+Poi anche se si ha a che fare con volumi logici si usano comunque *mkfs, mount, ...*.
+Si possono aggiungere ovviamente volumi logici all'fstab all'fstab.
+Gli UUID si vedono con *blkid*:
+```shell
+[me@linuxbox ~]$ sudo blkid /dev/sdb
+/dev/sdb: PTUUID="4522fa09-fbe6-2144-a700-312b06b807df" PTTYPE="gpt"
+```
+Si ha che */boot* viene montato a parte perché grub al boot non ha caricato il modulo per LVM e quindi deve essere leggere i binari del kernel *linuz* in una partizione primaria.
+
+### ALTRO (DA RIGUARDARE)
+
+Per fare un check su un file system uso *fsck*, da fare prima e dopo le manutenzioni, che a seconda del file system si fanno con file system montati o smontati:
+```shell
+[me@linuxbox ~]$ sudo fsck /dev/sdb1
+fsck 1.40.8 (13-Mar-2016)
+e2fsck 1.40.8 (13-Mar-2016)
+/dev/sdb1: clean, 11/3904 files, 1661/15608 blocks
+```
+Abbiamo poi *dd*, device dump, che prende i blocchi da una sorgente e li mette da qualche altra parte, con la sintassi *dd if=input_file of=output_file [bs=block_size [count=blocks]]*. Prende in *of* anche file d'immagine. Il sorgente deve essere smontato. *dd* non ha controllo d'errore. Count se lasciato vuoto significa che copio tutto. 
+Cancellando i primi 2048 byte per GPT (anche se ha il backup della partition table anche alla fine, e quindi va cancellata; per farlo si può usare *wipefs -a -f* per GPT) o 512 per MSDOS rendo irriconoscibile un device al kernel, infatti cancello la partition table, al più di consocere l'offset. Scrivo zero con dd:
+```shell
+[me@linuxbox ~]$ sudo dd if=/dev/zero of=/dev/sdb bs=512 count=1 
+```
+CI sono dei file system speciali come *proc, sys etc...* e per questo si usa l'opzione *bind* di *mount*
+
+Vediamo ora come montare dischi di rete, passiamo quindi allo storage a file.
+Si parla di *storage area network*. I più importanti protocolli di share di rete sono NFS e SMB, che però non è POSIX. 
+Sul client devo avere installato *nfs-utils*. Poi ho la seguente sintassi, *nome_server:/cartella_share mount_point*:
+```shell
+[me@linuxbox ~]$ sudo mount server:/share /mnt/nfs/
+```
+Il controllo dell'utenza si fa lato server, controllando utente e gruppo... anche se non è il massimo in termini di sicurezza. Si usa per condividere file "a basso rischio". Ci sono soluzione più sicure. 
+Per una share samba ho, dopo aver installato *cifs-utils*:
+```shell
+[me@linuxbox ~]$ sudo mount -o username=<user> //server/winshare /mnt/smb/
+```
+che chiede la password in quanto generalmente si avrà windows lato server con NTFS e non c'è il concetto di gruppo etc... 
+Volendo si ha *samba-multiuser*, con un utente che fa il mount e tutti fanno il join.
+
+Vediamo i permessi speciali, ovvero dei flag che impongono un certo comportamento. Sono 3:
+1) setwid, vale 4, che applicato ad un eseguibile implica che lo si esegue con l'id proprietario del file, utile per /bin/passwd perché se no non tutti potrebbero scrivere su /etc/shadow. Viene ignorato sugli script (?)
+2) setgid, vale 2 (?)
+3) stickybit, vale 1, che dice che un utente può cancellare solo i suoi file (?)
+
+infatti come gruppo ownr si ha il gruppo della share stessa, questo lo fa setgid, e si vede come "s" dando *ls -ld /share*.
